@@ -1,0 +1,31 @@
+Objetivos:
+
+    Exercitar a compilação e a execução de código de um programa MPI na máquina local como feito no TPD1
+    Experimentar com execuções usando diferentes números de processos e observar como os processos são escalonados
+    Implementar um pipeline básico a partir do pseudo código visto em aula
+
+Compilação em máquina local:  mpicc file.c -o file_exec
+
+Execução em máquina local:      mpirun -np 1 ./file_exec (onde np é o número de processos que serão criados)
+
+Atividades:
+
+0) instalar o ambiente MPI em uma máquina local (usar versões gratuitas como o OpenMPI ou o MPICH)
+
+1) Exercitar a compilação do código na máquina local.
+
+    compilar o programa mpi_hello.c e hello_messages.c
+    executar os programas com diferentes números de processos e observar o que acontece (atentar para as condições de corrida na execução) 
+
+2) Compilar e executar o programa hello_messages.c (diretório exemplos/ether) que utiliza as rotinas de envio e recebimento de mensagens. 
+
+    observar sua execução com diferentes números de processos em vários nós do cluster. Como se comportou a ordem das mensagens? Entender o motivo
+    alterar o programa para que a ordem das mensagens possa mudar usando o parâmetro MPI_ANY_SOURCE no recebimento das mensagens. O que aconteceu?
+
+Usar o código do envio e recebimento de mensagens como base para o próximo exercício.
+
+3) Escrever um programa MPI que implemente pipeline básico que passe um inteiro de processo em processo. No estágio final este inteiro é mostrado na tela.
+
+    se basear no pseudocódigo do pipeline visto em aula e fornecido no Moodle
+    testar este programa com diferentes números de processos em vários nós do cluster
+    incluir funcionalidade nos estágios de forma que cada estágio intermediário incremente o inteiro em 1

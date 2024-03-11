@@ -1,0 +1,14 @@
+Objetivos:
+
+    Expandir o código do pipeline básico experimentando com paralelismo entre os processos
+    Testar as chamadas de medição de tempo do MPI e analisar como podem ser aplicadas em um pipeline
+
+Atividades:
+1) Expandir o programa do pipeline básico incluindo:
+
+    transmissão de um vetor de inteiros em cada mensagem (mudando o parâmetro de número de dados enviados na chamada)
+
+    transmissão de múltiplas mensagens em paralelo (pipeline de fato) permitindo que um estágio possa repassar várias mensagens antes de terminar sua execução
+
+    inclusão de medição de tempo com chamadas MPI (ver código exemplo) e pensar como pode ser usado de forma correta em um pipeline para medir quanto tempo uma mensagem demora para passar por todos os estágios
+
