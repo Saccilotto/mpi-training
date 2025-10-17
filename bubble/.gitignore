@@ -1,0 +1,20 @@
+# Executáveis
+seq
+mpi
+
+# Arquivos de objeto
+*.o
+*.out
+
+# Arquivos temporários
+*~
+*.swp
+*.swo
+
+# Resultados (commits apenas .dat e .png, não temporários)
+results/*.log
+results/*.tmp
+
+# OS specific
+.DS_Store
+Thumbs.db

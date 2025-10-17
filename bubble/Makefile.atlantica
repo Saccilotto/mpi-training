@@ -1,0 +1,148 @@
+# ============================================================
+# Makefile para Atlantica Cluster
+# ============================================================
+#
+# Este Makefile adapta os comandos para o cluster Atlantica
+# usando ladcomp e srun
+#
+# Uso na Atlantica:
+#   make -f Makefile.atlantica all
+#   make -f Makefile.atlantica run-experiments
+#
+# ============================================================
+
+# Compiladores Atlantica
+CC = ladcomp -env gcc
+MPICC = ladcomp -env mpicc
+
+# Flags de compilação
+CFLAGS = -Wall -Wextra -O2
+
+# Arquivos fonte
+SEQ_SRC = seq.c
+MPI_SRC = mpi.c
+
+# Executáveis
+SEQ_BIN = seq
+MPI_BIN = mpi
+
+# Configurações de execução
+NODES ?= 2
+NP ?= 15
+SIZE ?= 1000000
+DELTA ?= 0
+
+# ============================================================
+# TARGETS DE COMPILAÇÃO
+# ============================================================
+
+.PHONY: all seq mpi clean help
+
+all: seq mpi
+
+seq: $(SEQ_SRC)
+	@echo "Compilando versão sequencial com ladcomp..."
+	$(CC) $(SEQ_SRC) -o $(SEQ_BIN)
+	@echo "✓ Compilação concluída: ./$(SEQ_BIN)"
+
+mpi: $(MPI_SRC)
+	@echo "Compilando versão paralela (MPI) com ladcomp..."
+	$(MPICC) $(MPI_SRC) -o $(MPI_BIN)
+	@echo "✓ Compilação concluída: ./$(MPI_BIN)"
+
+# ============================================================
+# TARGETS DE EXECUÇÃO (usando srun)
+# ============================================================
+
+run-seq: seq
+	@echo "\n========== EXECUTANDO SEQUENCIAL =========="
+	./$(SEQ_BIN) $(SIZE) 0
+
+run-mpi: mpi
+	@echo "\n========== EXECUTANDO MPI ($(NP) processos, $(NODES) nós) =========="
+	srun --exclusive -N $(NODES) -n $(NP) ./$(MPI_BIN) $(SIZE) $(DELTA) 0
+
+# Testes rápidos
+test-mpi-small: mpi
+	@echo "\n========== TESTE RÁPIDO (40 elementos, 7 processos, 1 nó) =========="
+	srun --exclusive -N 1 -n 7 ./$(MPI_BIN) 40 10 1
+
+test-mpi-1k: mpi
+	@echo "\n========== TESTE 1K (1000 elementos, 7 processos, 1 nó) =========="
+	srun --exclusive -N 1 -n 7 ./$(MPI_BIN) 1000 0 0
+
+test-mpi-10k: mpi
+	@echo "\n========== TESTE 10K (10000 elementos, 15 processos, 2 nós) =========="
+	srun --exclusive -N 2 -n 15 ./$(MPI_BIN) 10000 0 0
+
+# ============================================================
+# BENCHMARKS NA ATLANTICA
+# ============================================================
+
+bench-atlantica: mpi seq
+	@echo "\n========== BENCHMARK ATLANTICA - 1.000.000 elementos =========="
+	@echo "\nSequencial:"
+	@./$(SEQ_BIN) 1000000 0
+	@echo "\nMPI - 3 processos (1 nó):"
+	@srun --exclusive -N 1 -n 3 ./$(MPI_BIN) 1000000 0 0
+	@echo "\nMPI - 7 processos (1 nó):"
+	@srun --exclusive -N 1 -n 7 ./$(MPI_BIN) 1000000 0 0
+	@echo "\nMPI - 15 processos (2 nós):"
+	@srun --exclusive -N 2 -n 15 ./$(MPI_BIN) 1000000 0 0
+
+# ============================================================
+# EXPERIMENTOS COMPLETOS
+# ============================================================
+
+run-experiments: all
+	@echo "\n========== EXECUTANDO EXPERIMENTOS COMPLETOS =========="
+	@echo "Este processo pode demorar alguns minutos..."
+	./run_experiments.sh atlantica
+
+# ============================================================
+# UTILIDADES
+# ============================================================
+
+clean:
+	@echo "Limpando arquivos compilados..."
+	rm -f $(SEQ_BIN) $(MPI_BIN)
+	@echo "✓ Limpeza concluída"
+
+clean-results:
+	@echo "Limpando resultados de experimentos..."
+	rm -rf results/*
+	@echo "✓ Resultados limpos"
+
+help:
+	@echo "============================================================"
+	@echo "Makefile - Atlantica Cluster"
+	@echo "============================================================"
+	@echo ""
+	@echo "COMPILAÇÃO:"
+	@echo "  make -f Makefile.atlantica all         - Compila tudo"
+	@echo "  make -f Makefile.atlantica seq         - Compila sequencial"
+	@echo "  make -f Makefile.atlantica mpi         - Compila MPI"
+	@echo ""
+	@echo "EXECUÇÃO:"
+	@echo "  make -f Makefile.atlantica run-seq     - Executa sequencial"
+	@echo "  make -f Makefile.atlantica run-mpi     - Executa MPI"
+	@echo ""
+	@echo "TESTES:"
+	@echo "  make -f Makefile.atlantica test-mpi-small  - Teste 40 elementos"
+	@echo "  make -f Makefile.atlantica test-mpi-1k     - Teste 1K elementos"
+	@echo "  make -f Makefile.atlantica test-mpi-10k    - Teste 10K elementos"
+	@echo ""
+	@echo "BENCHMARKS:"
+	@echo "  make -f Makefile.atlantica bench-atlantica  - Benchmark completo"
+	@echo ""
+	@echo "EXPERIMENTOS:"
+	@echo "  make -f Makefile.atlantica run-experiments  - Executa todos os experimentos"
+	@echo ""
+	@echo "PARÂMETROS CUSTOMIZADOS:"
+	@echo "  make -f Makefile.atlantica run-mpi NODES=2 NP=15 SIZE=1000000"
+	@echo ""
+	@echo "LIMPEZA:"
+	@echo "  make -f Makefile.atlantica clean         - Remove executáveis"
+	@echo "  make -f Makefile.atlantica clean-results - Remove resultados"
+	@echo ""
+	@echo "============================================================"
