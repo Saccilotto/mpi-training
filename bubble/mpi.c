@@ -154,7 +154,6 @@ int main(int argc, char **argv)
 {
     int rank, size;
     int *vetor = NULL;
-    int tamanho_local;
     int array_size = ARRAY_SIZE;
     int delta = DELTA;
     MPI_Status status;
@@ -164,36 +163,21 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    /* Parse argumentos de linha de comando (apenas rank 0) */
     if (rank == 0) {
         if (argc > 1) {
             array_size = atoi(argv[1]);
         }
+
         if (argc > 2) {
             delta = atoi(argv[2]);
         }
+
         if (argc > 3) {
             g_debug = atoi(argv[3]);
         }
-
-        /* Se DELTA == 0 ou nao especificado, calcula automaticamente */
-        /* DELTA = array_size / (2^depth) onde depth = log2(size) */
-        if (delta == 0) {
-            int depth = 0;
-            int temp = size;
-            while (temp > 1) {
-                temp = temp / 2;
-                depth++;
-            }
-            delta = array_size / (1 << depth);  // array_size / 2^depth
-            if (delta < 1) delta = 1;
-        }
     }
 
-    /* Broadcast dos parametros para todos os processos */
-    MPI_Bcast(&array_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&delta, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&g_debug, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    // MPI_PROBE(IMPLEMENTATION)
 
     if (rank == 0) {
         /* ========== PROCESSO RAIZ (rank 0) ========== */
@@ -247,20 +231,21 @@ int main(int argc, char **argv)
     } else {
         /* ========== PROCESSOS FILHOS ========== */
         /* Recebe tamanho do vetor */
-        MPI_Recv(&tamanho_local, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-
+        // MPI_Recv(&, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+        
         /* Aloca vetor local */
-        vetor = (int *)malloc(sizeof(int) * tamanho_local);
+        vetor = (int *)malloc(sizeof(int) * array_size);
+
         if (vetor == NULL) {
             fprintf(stderr, "[Rank %d] Erro ao alocar memoria!\n", rank);
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
 
         /* Recebe dados do vetor */
-        MPI_Recv(vetor, tamanho_local, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, &status);
+        MPI_Recv(vetor, array_size, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, &status);
 
         /* Chama funcao divide-and-conquer */
-        divide_conquer(vetor, tamanho_local, rank, delta);
+        divide_conquer(vetor, array_size, rank, delta);
 
         free(vetor);
     }
