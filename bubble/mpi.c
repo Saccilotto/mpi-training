@@ -60,7 +60,7 @@ int *interleaving(int vetor[], int tam)
 }
 
 /* Funcao recursiva que implementa divide-and-conquer */
-void divide_conquer(int *vetor, int tamanho, int rank, int delta)
+void divide_conquer(int *vetor, int tamanho, int rank, int delta, int num_procs)
 {
     int filho_esquerdo, filho_direito, pai;
     int meio;
@@ -71,8 +71,12 @@ void divide_conquer(int *vetor, int tamanho, int rank, int delta)
         printf("[Rank %d] Recebeu vetor de tamanho %d\n", rank, tamanho);
     }
 
+    filho_esquerdo = 2 * rank + 1;
+    filho_direito = 2 * rank + 2;
+
     /* Verifica se deve CONQUISTAR ou DIVIDIR */
-    if (tamanho <= delta) {
+    /* Conquista se: tamanho <= delta OU nao ha processos filhos disponiveis */
+    if (tamanho <= delta || filho_esquerdo >= num_procs) {
         /* ========== CONQUISTAR ========== */
         if (g_debug) {
             printf("[Rank %d] CONQUISTANDO: ordenando %d elementos\n", rank, tamanho);
@@ -96,8 +100,6 @@ void divide_conquer(int *vetor, int tamanho, int rank, int delta)
             printf("[Rank %d] DIVIDINDO: %d elementos em 2 partes\n", rank, tamanho);
         }
 
-        filho_esquerdo = 2 * rank + 1;
-        filho_direito = 2 * rank + 2;
         meio = tamanho / 2;
 
         /* Envia metade esquerda para filho esquerdo */
@@ -105,17 +107,25 @@ void divide_conquer(int *vetor, int tamanho, int rank, int delta)
             printf("[Rank %d] Enviando %d elementos para filho esquerdo [Rank %d]\n",
                    rank, meio, filho_esquerdo);
         }
-        MPI_Send(&meio, 1, MPI_INT, filho_esquerdo, 0, MPI_COMM_WORLD);  // envia tamanho
         MPI_Send(vetor, meio, MPI_INT, filho_esquerdo, 0, MPI_COMM_WORLD);  // envia dados
 
-        /* Envia metade direita para filho direito */
+        /* Verifica se filho direito existe antes de enviar */
         int tamanho_direito = tamanho - meio;
-        if (g_debug) {
-            printf("[Rank %d] Enviando %d elementos para filho direito [Rank %d]\n",
-                   rank, tamanho_direito, filho_direito);
+        if (filho_direito < num_procs) {
+            /* Envia metade direita para filho direito */
+            if (g_debug) {
+                printf("[Rank %d] Enviando %d elementos para filho direito [Rank %d]\n",
+                       rank, tamanho_direito, filho_direito);
+            }
+            MPI_Send(&vetor[meio], tamanho_direito, MPI_INT, filho_direito, 0, MPI_COMM_WORLD);
+        } else {
+            /* Nao ha filho direito, ordena localmente a metade direita */
+            if (g_debug) {
+                printf("[Rank %d] Filho direito [Rank %d] nao existe, ordenando localmente\n",
+                       rank, filho_direito);
+            }
+            bs(tamanho_direito, &vetor[meio]);
         }
-        MPI_Send(&tamanho_direito, 1, MPI_INT, filho_direito, 0, MPI_COMM_WORLD);
-        MPI_Send(&vetor[meio], tamanho_direito, MPI_INT, filho_direito, 0, MPI_COMM_WORLD);
 
         /* Recebe vetores ordenados dos filhos */
         if (g_debug) {
@@ -123,7 +133,11 @@ void divide_conquer(int *vetor, int tamanho, int rank, int delta)
         }
 
         MPI_Recv(vetor, meio, MPI_INT, filho_esquerdo, 0, MPI_COMM_WORLD, &status);
-        MPI_Recv(&vetor[meio], tamanho - meio, MPI_INT, filho_direito, 0, MPI_COMM_WORLD, &status);
+
+        /* So recebe do filho direito se ele existir */
+        if (filho_direito < num_procs) {
+            MPI_Recv(&vetor[meio], tamanho_direito, MPI_INT, filho_direito, 0, MPI_COMM_WORLD, &status);
+        }
 
         if (g_debug) {
             printf("[Rank %d] Recebeu respostas! Intercalando...\n", rank);
@@ -177,7 +191,9 @@ int main(int argc, char **argv)
         }
     }
 
-    // MPI_PROBE(IMPLEMENTATION)
+    /* Broadcast das variaveis de configuracao para todos os processos */
+    MPI_Bcast(&delta, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&g_debug, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     if (rank == 0) {
         /* ========== PROCESSO RAIZ (rank 0) ========== */
@@ -210,7 +226,7 @@ int main(int argc, char **argv)
         start_time = MPI_Wtime();  // Inicia medicao de tempo
 
         /* Chama funcao divide-and-conquer */
-        divide_conquer(vetor, array_size, rank, delta);
+        divide_conquer(vetor, array_size, rank, delta, size);
 
         end_time = MPI_Wtime();  // Finaliza medicao de tempo
 
@@ -230,26 +246,47 @@ int main(int argc, char **argv)
 
     } else {
         /* ========== PROCESSOS FILHOS ========== */
-        /* Recebe tamanho do vetor */
-        // MPI_Recv(&, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-        
-        /* Aloca vetor local */
-        vetor = (int *)malloc(sizeof(int) * array_size);
+        int tam_recebido;
+        int fonte;
+
+        /* Usa MPI_Probe para descobrir o tamanho da mensagem que esta chegando */
+        /* MPI_Probe "espia" a mensagem sem remove-la da fila */
+        MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+
+        /* Descobre quem enviou a mensagem */
+        fonte = status.MPI_SOURCE;
+
+        /* Usa MPI_Get_count para descobrir quantos elementos estao na mensagem */
+        MPI_Get_count(&status, MPI_INT, &tam_recebido);
+
+        if (g_debug) {
+            printf("[Rank %d] MPI_Probe detectou mensagem com %d elementos do rank %d\n",
+                   rank, tam_recebido, fonte);
+        }
+
+        /* Aloca vetor local com o tamanho EXATO descoberto por MPI_Probe */
+        vetor = (int *)malloc(sizeof(int) * tam_recebido);
 
         if (vetor == NULL) {
-            fprintf(stderr, "[Rank %d] Erro ao alocar memoria!\n", rank);
+            fprintf(stderr, "[Rank %d] Erro ao alocar memoria para %d elementos!\n",
+                    rank, tam_recebido);
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
 
-        /* Recebe dados do vetor */
-        MPI_Recv(vetor, array_size, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, &status);
+        /* Agora sim, recebe os dados do vetor */
+        MPI_Recv(vetor, tam_recebido, MPI_INT, fonte, 0, MPI_COMM_WORLD, &status);
 
-        /* Chama funcao divide-and-conquer */
-        divide_conquer(vetor, array_size, rank, delta);
+        if (g_debug) {
+            printf("[Rank %d] Dados recebidos com sucesso\n", rank);
+        }
+
+        /* Chama funcao divide-and-conquer com o tamanho correto */
+        divide_conquer(vetor, tam_recebido, rank, delta, size);
 
         free(vetor);
     }
 
     MPI_Finalize();
+    
     return 0;
 }
