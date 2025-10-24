@@ -247,21 +247,21 @@ int main(int argc, char **argv)
     } else {
         /* ========== PROCESSOS FILHOS ========== */
         int tam_recebido;
-        int fonte;
+        int pai;
 
         /* Usa MPI_Probe para descobrir o tamanho da mensagem que esta chegando */
         /* MPI_Probe "espia" a mensagem sem remove-la da fila */
         MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
 
         /* Descobre quem enviou a mensagem */
-        fonte = status.MPI_SOURCE;
+        pai = status.MPI_SOURCE;
 
         /* Usa MPI_Get_count para descobrir quantos elementos estao na mensagem */
         MPI_Get_count(&status, MPI_INT, &tam_recebido);
 
         if (g_debug) {
             printf("[Rank %d] MPI_Probe detectou mensagem com %d elementos do rank %d\n",
-                   rank, tam_recebido, fonte);
+                   rank, tam_recebido, pai);
         }
 
         /* Aloca vetor local com o tamanho EXATO descoberto por MPI_Probe */
@@ -274,7 +274,7 @@ int main(int argc, char **argv)
         }
 
         /* Agora sim, recebe os dados do vetor */
-        MPI_Recv(vetor, tam_recebido, MPI_INT, fonte, 0, MPI_COMM_WORLD, &status);
+        MPI_Recv(vetor, tam_recebido, MPI_INT, pai, 0, MPI_COMM_WORLD, &status);
 
         if (g_debug) {
             printf("[Rank %d] Dados recebidos com sucesso\n", rank);
