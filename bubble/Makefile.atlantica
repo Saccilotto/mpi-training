@@ -21,12 +21,14 @@ CFLAGS = -Wall -Wextra -O2
 # Arquivos fonte
 SEQ_SRC = seq.c
 MPI_MERGE_SRC = mpi_bubblesort.c
-MPI_ODDEVEN_SRC = mpi_bubblesort_extra.c
+MPI_ODDEVEN_SRC = mpi_odd_even.c
+MPI_QSORT_SRC = mpi_qsort.c
 
 # Executáveis
 SEQ_BIN = seq
 MPI_MERGE_BIN = mpi_merge
 MPI_ODDEVEN_BIN = mpi_oddeven
+MPI_QSORT_BIN = mpi_qsort
 
 # Configurações de execução
 NODES ?= 2
@@ -38,7 +40,7 @@ DELTA ?= 0
 # TARGETS DE COMPILAÇÃO
 # ============================================================
 
-.PHONY: all seq mpi mpi-merge mpi-oddeven clean help
+.PHONY: all seq mpi mpi-merge mpi-oddeven mpi-qsort clean help
 
 all: seq mpi
 
@@ -47,7 +49,7 @@ seq: $(SEQ_SRC)
 	$(CC) $(SEQ_SRC) -o $(SEQ_BIN)
 	@echo "✓ Compilação concluída: ./$(SEQ_BIN)"
 
-mpi: mpi-merge mpi-oddeven
+mpi: mpi-merge mpi-oddeven mpi-qsort
 
 mpi-merge: $(MPI_MERGE_SRC)
 	@echo "Compilando versão MPI com MERGE (interleaving)..."
@@ -58,6 +60,11 @@ mpi-oddeven: $(MPI_ODDEVEN_SRC)
 	@echo "Compilando versão MPI com ODD-EVEN transposition..."
 	$(MPICC) $(MPI_ODDEVEN_SRC) -lm -o $(MPI_ODDEVEN_BIN)
 	@echo "✓ Compilação concluída: ./$(MPI_ODDEVEN_BIN)"
+
+mpi-qsort: $(MPI_QSORT_SRC)
+	@echo "Compilando versão MPI com QUICKSORT paralelo..."
+	$(MPICC) $(MPI_QSORT_SRC) -lm -o $(MPI_QSORT_BIN)
+	@echo "✓ Compilação concluída: ./$(MPI_QSORT_BIN)"
 
 # ============================================================
 # TARGETS DE EXECUÇÃO (usando srun)
@@ -75,7 +82,11 @@ run-mpi-oddeven: mpi-oddeven
 	@echo "\n========== EXECUTANDO MPI ODD-EVEN ($(NP) processos, $(NODES) nós) =========="
 	srun --exclusive -N $(NODES) -n $(NP) ./$(MPI_ODDEVEN_BIN) $(SIZE)
 
-run-mpi: run-mpi-merge run-mpi-oddeven
+run-mpi-qsort: mpi-qsort
+	@echo "\n========== EXECUTANDO MPI QUICKSORT ($(NP) processos, $(NODES) nós) =========="
+	srun --exclusive -N $(NODES) -n $(NP) ./$(MPI_QSORT_BIN) $(SIZE) $(DELTA) 0
+
+run-mpi: run-mpi-merge run-mpi-oddeven run-mpi-qsort
 
 # Testes rápidos
 test-mpi-small: mpi
@@ -109,10 +120,12 @@ bench-atlantica: mpi seq
 # EXPERIMENTOS COMPLETOS
 # ============================================================
 
-run-experiments: all
-	@echo "\n========== EXECUTANDO EXPERIMENTOS COMPLETOS =========="
+run-qsort-experiments: all
+	@echo "\n========== EXPERIMENTOS: QUICKSORT VS ODD-EVEN =========="
 	@echo "Este processo pode demorar alguns minutos..."
-	./run_experiments.sh atlantica
+	./run_qsort_experiments.sh
+
+run-experiments: run-qsort-experiments
 
 # ============================================================
 # UTILIDADES
@@ -120,7 +133,7 @@ run-experiments: all
 
 clean:
 	@echo "Limpando arquivos compilados..."
-	rm -f $(SEQ_BIN) $(MPI_MERGE_BIN) $(MPI_ODDEVEN_BIN)
+	rm -f $(SEQ_BIN) $(MPI_MERGE_BIN) $(MPI_ODDEVEN_BIN) $(MPI_QSORT_BIN)
 	@echo "✓ Limpeza concluída"
 
 clean-results:
