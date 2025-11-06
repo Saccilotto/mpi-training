@@ -20,11 +20,13 @@ CFLAGS = -Wall -Wextra -O2
 
 # Arquivos fonte
 SEQ_SRC = seq.c
-MPI_SRC = mpi.c
+MPI_MERGE_SRC = mpi_bubblesort.c
+MPI_ODDEVEN_SRC = mpi_bubblesort_extra.c
 
 # Executáveis
 SEQ_BIN = seq
-MPI_BIN = mpi
+MPI_MERGE_BIN = mpi_merge
+MPI_ODDEVEN_BIN = mpi_oddeven
 
 # Configurações de execução
 NODES ?= 2
@@ -36,7 +38,7 @@ DELTA ?= 0
 # TARGETS DE COMPILAÇÃO
 # ============================================================
 
-.PHONY: all seq mpi clean help
+.PHONY: all seq mpi mpi-merge mpi-oddeven clean help
 
 all: seq mpi
 
@@ -45,10 +47,17 @@ seq: $(SEQ_SRC)
 	$(CC) $(SEQ_SRC) -o $(SEQ_BIN)
 	@echo "✓ Compilação concluída: ./$(SEQ_BIN)"
 
-mpi: $(MPI_SRC)
-	@echo "Compilando versão paralela (MPI) com ladcomp..."
-	$(MPICC) $(MPI_SRC) -o $(MPI_BIN)
-	@echo "✓ Compilação concluída: ./$(MPI_BIN)"
+mpi: mpi-merge mpi-oddeven
+
+mpi-merge: $(MPI_MERGE_SRC)
+	@echo "Compilando versão MPI com MERGE (interleaving)..."
+	$(MPICC) $(MPI_MERGE_SRC) -lm -o $(MPI_MERGE_BIN)
+	@echo "✓ Compilação concluída: ./$(MPI_MERGE_BIN)"
+
+mpi-oddeven: $(MPI_ODDEVEN_SRC)
+	@echo "Compilando versão MPI com ODD-EVEN transposition..."
+	$(MPICC) $(MPI_ODDEVEN_SRC) -lm -o $(MPI_ODDEVEN_BIN)
+	@echo "✓ Compilação concluída: ./$(MPI_ODDEVEN_BIN)"
 
 # ============================================================
 # TARGETS DE EXECUÇÃO (usando srun)
@@ -58,9 +67,15 @@ run-seq: seq
 	@echo "\n========== EXECUTANDO SEQUENCIAL =========="
 	./$(SEQ_BIN) $(SIZE) 0
 
-run-mpi: mpi
-	@echo "\n========== EXECUTANDO MPI ($(NP) processos, $(NODES) nós) =========="
-	srun --exclusive -N $(NODES) -n $(NP) ./$(MPI_BIN) $(SIZE) $(DELTA) 0
+run-mpi-merge: mpi-merge
+	@echo "\n========== EXECUTANDO MPI MERGE ($(NP) processos, $(NODES) nós) =========="
+	srun --exclusive -N $(NODES) -n $(NP) ./$(MPI_MERGE_BIN) $(SIZE) $(DELTA) 0
+
+run-mpi-oddeven: mpi-oddeven
+	@echo "\n========== EXECUTANDO MPI ODD-EVEN ($(NP) processos, $(NODES) nós) =========="
+	srun --exclusive -N $(NODES) -n $(NP) ./$(MPI_ODDEVEN_BIN) $(SIZE)
+
+run-mpi: run-mpi-merge run-mpi-oddeven
 
 # Testes rápidos
 test-mpi-small: mpi
@@ -105,7 +120,7 @@ run-experiments: all
 
 clean:
 	@echo "Limpando arquivos compilados..."
-	rm -f $(SEQ_BIN) $(MPI_BIN)
+	rm -f $(SEQ_BIN) $(MPI_MERGE_BIN) $(MPI_ODDEVEN_BIN)
 	@echo "✓ Limpeza concluída"
 
 clean-results:

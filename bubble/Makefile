@@ -12,11 +12,13 @@ DEBUG_FLAGS = -g
 
 # Arquivos fonte
 SEQ_SRC = seq.c
-MPI_SRC = mpi.c
+MPI_MERGE_SRC = mpi_bubblesort.c
+MPI_ODDEVEN_SRC = mpi_bubblesort_extra.c
 
 # Executáveis
 SEQ_BIN = seq
-MPI_BIN = mpi
+MPI_MERGE_BIN = mpi_merge
+MPI_ODDEVEN_BIN = mpi_oddeven
 
 # Número de processos padrão para MPI
 NP ?= 7
@@ -30,7 +32,7 @@ DEBUG ?= 0
 # TARGETS DE COMPILAÇÃO
 # ============================================================
 
-.PHONY: all seq mpi clean help
+.PHONY: all seq mpi mpi-merge mpi-oddeven clean help
 
 all: seq mpi
 
@@ -39,10 +41,17 @@ seq: $(SEQ_SRC)
 	$(CC) $(CFLAGS) $(SEQ_SRC) -o $(SEQ_BIN)
 	@echo "✓ Compilação concluída: ./$(SEQ_BIN)"
 
-mpi: $(MPI_SRC)
-	@echo "Compilando versão paralela (MPI)..."
-	$(MPICC) $(CFLAGS) $(MPI_SRC) -o $(MPI_BIN)
-	@echo "✓ Compilação concluída: ./$(MPI_BIN)"
+mpi: mpi-merge mpi-oddeven
+
+mpi-merge: $(MPI_MERGE_SRC)
+	@echo "Compilando versão MPI com MERGE (interleaving)..."
+	$(MPICC) $(CFLAGS) $(MPI_MERGE_SRC) -lm -o $(MPI_MERGE_BIN)
+	@echo "✓ Compilação concluída: ./$(MPI_MERGE_BIN)"
+
+mpi-oddeven: $(MPI_ODDEVEN_SRC)
+	@echo "Compilando versão MPI com ODD-EVEN transposition..."
+	$(MPICC) $(CFLAGS) $(MPI_ODDEVEN_SRC) -lm -o $(MPI_ODDEVEN_BIN)
+	@echo "✓ Compilação concluída: ./$(MPI_ODDEVEN_BIN)"
 
 # Compilação com símbolos de debug
 debug-seq: $(SEQ_SRC)
@@ -62,8 +71,10 @@ test-seq: seq
 	./$(SEQ_BIN) $(SIZE) $(DEBUG)
 
 test-mpi: mpi
-	@echo "\n========== TESTE MPI (NP=$(NP), SIZE=$(SIZE), DELTA=$(DELTA)) =========="
-	mpirun -np $(NP) ./$(MPI_BIN) $(SIZE) $(DELTA) $(DEBUG)
+	@echo "\n========== TESTE MPI - VERSÃO MERGE (NP=$(NP), SIZE=$(SIZE), DELTA=$(DELTA)) =========="
+	mpirun -np $(NP) ./$(MPI_MERGE_BIN) $(SIZE) $(DELTA) $(DEBUG)
+	@echo "\n========== TESTE MPI - VERSÃO ODD-EVEN (NP=$(NP), SIZE=$(SIZE)) =========="
+	mpirun -np $(NP) ./$(MPI_ODDEVEN_BIN) $(SIZE)
 
 # Teste com diferentes números de processos
 test-mpi-np3: mpi
@@ -174,7 +185,7 @@ speedup-analysis: all
 
 clean:
 	@echo "Limpando arquivos compilados..."
-	rm -f $(SEQ_BIN) $(MPI_BIN)
+	rm -f $(SEQ_BIN) $(MPI_MERGE_BIN) $(MPI_ODDEVEN_BIN)
 	@echo "✓ Limpeza concluída"
 
 help:
