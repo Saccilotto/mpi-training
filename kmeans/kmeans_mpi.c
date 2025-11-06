@@ -6,7 +6,7 @@
 
 #define N 1000000
 #define D 4
-#define K 3
+#define K 10
 #define MAX_ITER 100
 
 double distance(double *a, double *b) {

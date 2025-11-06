@@ -1,0 +1,13 @@
+Final centroids:
+Cluster 0: 2.52 7.21 2.47 7.14 
+Cluster 1: 6.88 7.89 6.00 7.88 
+Cluster 2: 7.57 7.30 7.61 2.76 
+Cluster 3: 7.04 6.86 2.19 2.67 
+Cluster 4: 2.20 3.13 7.06 7.32 
+Cluster 5: 6.91 2.65 2.19 7.00 
+Cluster 6: 2.20 7.33 6.96 3.00 
+Cluster 7: 6.07 2.11 6.86 2.12 
+Cluster 8: 2.43 2.81 2.54 2.84 
+Cluster 9: 7.61 2.74 7.58 7.28 
+
+Execution time (Master wall time): 18.187 seconds
