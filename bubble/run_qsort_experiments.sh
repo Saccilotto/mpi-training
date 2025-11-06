@@ -141,8 +141,8 @@ run_test_oddeven() {
             output=$(${RUN_CMD} -np ${procs} ./${binary} ${size} 2>&1)
         fi
 
-        # Extrai o tempo (pode ter formato diferente)
-        time=$(echo "$output" | grep -i "time\|tempo" | grep -oP '\d+\.\d+' | head -1)
+        # Extrai o tempo (formato: "Elapsed = X.XXXX")
+        time=$(echo "$output" | grep -i "elapsed" | grep -oP '\d+\.\d+' | head -1)
 
         if [ -z "$time" ]; then
             echo "ERRO: Não foi possível extrair o tempo"
