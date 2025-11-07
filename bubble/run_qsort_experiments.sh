@@ -87,13 +87,15 @@ run_test() {
             output=$(${RUN_CMD} -np ${procs} ./${binary} ${size} ${delta} 0 2>&1)
         fi
 
-        # Extrai o tempo
-        time=$(echo "$output" | grep "Tempo de execucao" | awk '{print $4}')
+        # Extrai o tempo (formato: "Tempo de execucao: X.XXXXXX segundos")
+        time=$(echo "$output" | grep "Tempo de execucao" | tail -1 | awk '{print $4}')
 
-        if [ -z "$time" ]; then
-            echo "ERRO: Não foi possível extrair o tempo"
-            echo "DEBUG: Output completo:"
-            echo "$output" | tail -10
+        # Valida se o tempo foi extraído e é um número válido
+        if [ -z "$time" ] || ! [[ "$time" =~ ^[0-9]+\.?[0-9]*$ ]]; then
+            echo "ERRO: Não foi possível extrair o tempo válido (obtido: '$time')"
+            echo "DEBUG: Últimas 15 linhas do output:"
+            echo "$output" | tail -15
+            echo "=========================================="
             continue
         fi
 
@@ -144,10 +146,14 @@ run_test_oddeven() {
         fi
 
         # Extrai o tempo (formato: "Elapsed = X.XXXX")
-        time=$(echo "$output" | grep -i "elapsed" | grep -oP '\d+\.\d+' | head -1)
+        time=$(echo "$output" | grep -i "elapsed" | tail -1 | grep -oP '\d+\.\d+' | head -1)
 
-        if [ -z "$time" ]; then
-            echo "ERRO: Não foi possível extrair o tempo"
+        # Valida se o tempo foi extraído e é um número válido
+        if [ -z "$time" ] || ! [[ "$time" =~ ^[0-9]+\.?[0-9]*$ ]]; then
+            echo "ERRO: Não foi possível extrair o tempo válido (obtido: '$time')"
+            echo "DEBUG: Últimas 15 linhas do output:"
+            echo "$output" | tail -15
+            echo "=========================================="
             continue
         fi
 
