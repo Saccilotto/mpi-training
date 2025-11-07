@@ -92,6 +92,8 @@ run_test() {
 
         if [ -z "$time" ]; then
             echo "ERRO: Não foi possível extrair o tempo"
+            echo "DEBUG: Output completo:"
+            echo "$output" | tail -10
             continue
         fi
 
