@@ -15,12 +15,14 @@ SEQ_SRC = seq.c
 MPI_MERGE_SRC = mpi_bubblesort.c
 MPI_ODDEVEN_SRC = mpi_odd_even.c
 MPI_QSORT_SRC = mpi_qsort.c
+MPI_PHASES_SRC = mpi_bubblesort_phases.c
 
 # Executáveis
 SEQ_BIN = seq
 MPI_MERGE_BIN = mpi_merge
 MPI_ODDEVEN_BIN = mpi_oddeven
 MPI_QSORT_BIN = mpi_qsort
+MPI_PHASES_BIN = mpi_phases
 
 # Número de processos padrão para MPI
 NP ?= 7
@@ -34,7 +36,7 @@ DEBUG ?= 0
 # TARGETS DE COMPILAÇÃO
 # ============================================================
 
-.PHONY: all seq mpi mpi-merge mpi-oddeven mpi-qsort clean help
+.PHONY: all seq mpi mpi-merge mpi-oddeven mpi-qsort mpi-phases clean help
 
 all: seq mpi
 
@@ -43,7 +45,7 @@ seq: $(SEQ_SRC)
 	$(CC) $(CFLAGS) $(SEQ_SRC) -o $(SEQ_BIN)
 	@echo "✓ Compilação concluída: ./$(SEQ_BIN)"
 
-mpi: mpi-merge mpi-oddeven mpi-qsort
+mpi: mpi-merge mpi-oddeven mpi-qsort mpi-phases
 
 mpi-merge: $(MPI_MERGE_SRC)
 	@echo "Compilando versão MPI com MERGE (interleaving)..."
@@ -59,6 +61,11 @@ mpi-qsort: $(MPI_QSORT_SRC)
 	@echo "Compilando versão MPI com QUICKSORT paralelo..."
 	$(MPICC) $(CFLAGS) $(MPI_QSORT_SRC) -lm -o $(MPI_QSORT_BIN)
 	@echo "✓ Compilação concluída: ./$(MPI_QSORT_BIN)"
+
+mpi-phases: $(MPI_PHASES_SRC)
+	@echo "Compilando versão MPI com FASES PARALELAS..."
+	$(MPICC) $(CFLAGS) $(MPI_PHASES_SRC) -lm -o $(MPI_PHASES_BIN)
+	@echo "✓ Compilação concluída: ./$(MPI_PHASES_BIN)"
 
 # Compilação com símbolos de debug
 debug-seq: $(SEQ_SRC)
@@ -194,7 +201,7 @@ speedup-analysis: all
 
 clean:
 	@echo "Limpando arquivos compilados..."
-	rm -f $(SEQ_BIN) $(MPI_MERGE_BIN) $(MPI_ODDEVEN_BIN) $(MPI_QSORT_BIN)
+	rm -f $(SEQ_BIN) $(MPI_MERGE_BIN) $(MPI_ODDEVEN_BIN) $(MPI_QSORT_BIN) $(MPI_PHASES_BIN)
 	@echo "✓ Limpeza concluída"
 
 help:
