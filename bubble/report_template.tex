@@ -1,0 +1,172 @@
+% Template de Relatório para Trabalho de Fases Paralelas
+% Compilar com: pdflatex report_template.tex
+
+\documentclass[10pt,twocolumn]{article}
+
+% Pacotes
+\usepackage[utf8]{inputenc}
+\usepackage[portuguese]{babel}
+\usepackage[margin=2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+% Configurações
+\setlength{\columnsep}{0.6cm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.3em}
+
+% Título
+\title{\textbf{Bubble Sort Paralelo com Modelo de Fases Paralelas usando MPI}}
+\author{
+    Nome do Aluno 1 \\
+    \texttt{email1@edu.pucrs.br}
+    \and
+    Nome do Aluno 2 \\
+    \texttt{email2@edu.pucrs.br}
+}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introdução}
+
+Este trabalho implementa o algoritmo Bubble Sort seguindo o modelo de \textbf{fases paralelas} usando a biblioteca MPI (Message Passing Interface). O objetivo é analisar o desempenho desta abordagem e compará-la com o modelo de divisão e conquista para o mesmo problema.
+
+\section{Metodologia}
+
+\subsection{Modelo de Fases Paralelas}
+
+O modelo de fases paralelas funciona da seguinte forma:
+
+\begin{enumerate}
+    \item \textbf{Distribuição:} Cada processo é responsável por $\frac{1}{np}$ do vetor global
+    \item \textbf{Fase 1 - Ordenação Local:} Cada processo ordena seu subvetor usando Bubble Sort
+    \item \textbf{Fase 2 - Verificação:} Cada processo verifica se está ordenado em relação ao vizinho (comunicação point-to-point + broadcast)
+    \item \textbf{Fase 3 - Troca de Valores:} Se não estiver ordenado, processos trocam valores com vizinhos para convergir
+    \item Repete fases 1-3 até convergência global
+\end{enumerate}
+
+\subsection{Ambiente de Execução}
+
+Os experimentos foram executados no cluster \textbf{Grad} com as seguintes configurações:
+
+\begin{itemize}
+    \item \textbf{Nós:} 2 nós exclusivos
+    \item \textbf{Processos:} 16 cores (32 com Hyper-Threading)
+    \item \textbf{Tamanho do vetor:} 1.000.000 elementos
+    \item \textbf{Dados:} Ordem decrescente (pior caso)
+    \item \textbf{Implementação MPI:} OpenMPI
+\end{itemize}
+
+\section{Resultados}
+
+\subsection{Tempos de Execução}
+
+A Tabela~\ref{tab:results} apresenta os tempos de execução para diferentes configurações:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+\textbf{Procs} & \textbf{Tempo (s)} & \textbf{Speedup} & \textbf{Efic. (\%)} & \textbf{Iter.} \\
+\midrule
+1 (seq)  & XX.XXX & 1.00  & 100.0 & - \\
+4        & XX.XXX & X.XX  & XX.X  & XX \\
+8        & XX.XXX & X.XX  & XX.X  & XX \\
+16       & XX.XXX & X.XX  & XX.X  & XX \\
+32       & XX.XXX & X.XX  & XX.X  & XX \\
+\bottomrule
+\end{tabular}
+\caption{Resultados experimentais (1M elementos)}
+\label{tab:results}
+\end{table}
+
+\textbf{Observações:}
+\begin{itemize}
+    \item Speedup calculado como: $S_p = \frac{T_{seq}}{T_{par}}$
+    \item Eficiência calculada como: $E_p = \frac{S_p}{p} \times 100\%$
+    \item Número de iterações indica convergência do algoritmo
+\end{itemize}
+
+\subsection{Análise de Desempenho}
+
+\textbf{Speedup e Escalabilidade:}
+
+[PREENCHER COM ANÁLISE DOS RESULTADOS]
+
+\textit{Exemplo:} O speedup observado foi de X.XX com 16 processos, indicando uma eficiência de XX\%. A escalabilidade foi [boa/moderada/limitada] devido a [overhead de comunicação/sincronização/etc].
+
+\textbf{Número de Iterações:}
+
+O algoritmo convergiu em aproximadamente XX iterações para todas as configurações, indicando que [análise sobre comportamento de convergência].
+
+\section{Comparação com Divisão e Conquista}
+
+A Tabela~\ref{tab:comparison} compara os dois modelos:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Modelo} & \textbf{Tempo (s)} & \textbf{Speedup} & \textbf{Efic.} \\
+\midrule
+Divisão/Conquista & XX.XXX & X.XX & XX\% \\
+Fases Paralelas   & XX.XXX & X.XX & XX\% \\
+\bottomrule
+\end{tabular}
+\caption{Comparação entre modelos (16 processos)}
+\label{tab:comparison}
+\end{table}
+
+\textbf{Análise Comparativa:}
+
+[PREENCHER COM COMPARAÇÃO DETALHADA]
+
+\textit{Exemplo:} O modelo de fases paralelas apresentou [melhor/pior] desempenho comparado ao modelo de divisão e conquista. Isso se deve a [características específicas de cada modelo: padrão de comunicação, balanceamento de carga, overhead, etc].
+
+\textbf{Vantagens do Modelo de Fases Paralelas:}
+\begin{itemize}
+    \item Distribuição uniforme de dados (1/np por processo)
+    \item Padrão de comunicação regular e previsível
+    \item Boa localidade de dados após convergência
+\end{itemize}
+
+\textbf{Desvantagens:}
+\begin{itemize}
+    \item Múltiplas iterações até convergência
+    \item Overhead de verificação global a cada iteração
+    \item Trocas de mensagens frequentes entre vizinhos
+\end{itemize}
+
+\section{Conclusões}
+
+[PREENCHER COM CONCLUSÕES]
+
+Este trabalho demonstrou a implementação e análise do algoritmo Bubble Sort usando o modelo de fases paralelas com MPI. Os resultados mostraram que [principais conclusões sobre desempenho, escalabilidade, comparação com outros modelos].
+
+Trabalhos futuros poderiam investigar [otimizações, outras aplicações do modelo, etc].
+
+\section*{Código Fonte}
+
+O código fonte completo está disponível em:
+
+\texttt{https://github.com/seu-usuario/mpi-training}
+
+\vspace{0.5em}
+
+\textbf{Arquivos principais:}
+\begin{itemize}
+    \item \texttt{seq.c} - Versão sequencial
+    \item \texttt{mpi\_bubblesort\_phases.c} - Fases paralelas
+    \item \texttt{run\_phases\_experiments.sh} - Scripts de testes
+\end{itemize}
+
+\end{document}
