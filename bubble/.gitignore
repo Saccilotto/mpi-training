@@ -1,6 +1,10 @@
 # Executáveis
 seq
 mpi
+mpi_merge
+mpi_oddeven
+mpi_qsort
+mpi_phases
 
 # Arquivos de objeto
 *.o
