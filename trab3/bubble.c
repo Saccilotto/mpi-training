@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
     int rank, size;
     int local_size;
     int *local_array;
+    int *global_array = NULL;
     int i, iteracao = 0;
     int ordenado_global = 0;
     int ordenado_local;
@@ -60,18 +61,35 @@ int main(int argc, char *argv[]) {
     local_size = array_size / size;
     local_array = (int*)malloc(local_size * sizeof(int));
     
-    // Cada processo gera sua parte do vetor (ordem decrescente)
-    int offset = rank * local_size;
-    for (i = 0; i < local_size; i++) {
-        local_array[i] = array_size - (offset + i);
+    // RANK 0 GERA O VETOR COMPLETO
+    if (rank == 0) {
+        global_array = (int*)malloc(array_size * sizeof(int));
+        
+        // Gera vetor em ordem decrescente (pior caso para bubble sort)
+        for (i = 0; i < array_size; i++) {
+            global_array[i] = array_size - i;
+        }
+        
+        #ifdef DEBUG
+        printf("Iniciando ordenação paralela com %d processos\n", size);
+        printf("Tamanho total: %d, Tamanho local: %d\n", array_size, local_size);
+        printf("Vetor inicial (primeiros 10): ");
+        for (i = 0; i < 10 && i < array_size; i++) {
+            printf("%d ", global_array[i]);
+        }
+        printf("\n\n");
+        #endif
     }
     
-    #ifdef DEBUG
+    // DISTRIBUI O VETOR PARA TODOS OS PROCESSOS
+    MPI_Scatter(global_array, local_size, MPI_INT,
+                local_array, local_size, MPI_INT,
+                0, MPI_COMM_WORLD);
+    
+    // Rank 0 pode liberar o vetor global agora
     if (rank == 0) {
-        printf("Iniciando ordenação paralela com %d processos\n", size);
-        printf("Tamanho total: %d, Tamanho local: %d\n\n", array_size, local_size);
+        free(global_array);
     }
-    #endif
     
     MPI_Barrier(MPI_COMM_WORLD);
     if (rank == 0) {
@@ -120,83 +138,57 @@ int main(int argc, char *argv[]) {
         
         // FASE 3: Troca de valores entre vizinhos
         if (rank < size - 1) {
-            // Processo envia metade superior para o vizinho da direita
-            int num_troca = local_size / 2;
-            int *buffer_envio = (int*)malloc(num_troca * sizeof(int));
-            int *buffer_recebe = (int*)malloc(num_troca * sizeof(int));
+            // Troca TODO o array com o vizinho da direita
+            int *buffer_recebe = (int*)malloc(local_size * sizeof(int));
             
-            // Copia metade superior
-            for (i = 0; i < num_troca; i++) {
-                buffer_envio[i] = local_array[local_size - num_troca + i];
-            }
-            
-            // Troca com vizinho da direita
-            MPI_Sendrecv(buffer_envio, num_troca, MPI_INT, rank + 1, 2,
-                        buffer_recebe, num_troca, MPI_INT, rank + 1, 3,
+            // Troca arrays completos
+            MPI_Sendrecv(local_array, local_size, MPI_INT, rank + 1, 2,
+                        buffer_recebe, local_size, MPI_INT, rank + 1, 3,
                         MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             
-            // Combina valores recebidos com metade inferior
-            int *temp = (int*)malloc(local_size * sizeof(int));
-            int idx_temp = 0;
-            
-            // Copia metade inferior
-            for (i = 0; i < num_troca; i++) {
-                temp[idx_temp++] = local_array[i];
+            // Combina os dois arrays
+            int *temp = (int*)malloc(local_size * 2 * sizeof(int));
+            for (i = 0; i < local_size; i++) {
+                temp[i] = local_array[i];
+                temp[local_size + i] = buffer_recebe[i];
             }
             
-            // Adiciona valores recebidos
-            for (i = 0; i < num_troca; i++) {
-                temp[idx_temp++] = buffer_recebe[i];
-            }
+            // Ordena tudo
+            bs(local_size * 2, temp);
             
-            // Ordena e mantém os menores
-            bs(local_size, temp);
+            // Fica com a metade MENOR (rank menor fica com valores menores)
             for (i = 0; i < local_size; i++) {
                 local_array[i] = temp[i];
             }
             
-            free(buffer_envio);
             free(buffer_recebe);
             free(temp);
         }
         
         if (rank > 0) {
-            // Processo envia metade inferior para o vizinho da esquerda
-            int num_troca = local_size / 2;
-            int *buffer_envio = (int*)malloc(num_troca * sizeof(int));
-            int *buffer_recebe = (int*)malloc(num_troca * sizeof(int));
+            // Troca TODO o array com o vizinho da esquerda
+            int *buffer_recebe = (int*)malloc(local_size * sizeof(int));
             
-            // Copia metade inferior
-            for (i = 0; i < num_troca; i++) {
-                buffer_envio[i] = local_array[i];
-            }
-            
-            // Troca com vizinho da esquerda
-            MPI_Sendrecv(buffer_envio, num_troca, MPI_INT, rank - 1, 3,
-                        buffer_recebe, num_troca, MPI_INT, rank - 1, 2,
+            // Troca arrays completos
+            MPI_Sendrecv(local_array, local_size, MPI_INT, rank - 1, 3,
+                        buffer_recebe, local_size, MPI_INT, rank - 1, 2,
                         MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             
-            // Combina valores recebidos com metade superior
-            int *temp = (int*)malloc(local_size * sizeof(int));
-            int idx_temp = 0;
-            
-            // Adiciona valores recebidos
-            for (i = 0; i < num_troca; i++) {
-                temp[idx_temp++] = buffer_recebe[i];
-            }
-            
-            // Copia metade superior
-            for (i = num_troca; i < local_size; i++) {
-                temp[idx_temp++] = local_array[i];
-            }
-            
-            // Ordena e mantém os maiores
-            bs(local_size, temp);
+            // Combina os dois arrays
+            int *temp = (int*)malloc(local_size * 2 * sizeof(int));
             for (i = 0; i < local_size; i++) {
-                local_array[i] = temp[i];
+                temp[i] = buffer_recebe[i];
+                temp[local_size + i] = local_array[i];
             }
             
-            free(buffer_envio);
+            // Ordena tudo
+            bs(local_size * 2, temp);
+            
+            // Fica com a metade MAIOR (rank maior fica com valores maiores)
+            for (i = 0; i < local_size; i++) {
+                local_array[i] = temp[local_size + i];
+            }
+            
             free(buffer_recebe);
             free(temp);
         }

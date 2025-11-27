@@ -56,6 +56,7 @@ int main(int argc, char *argv[]) {
     int rank, size;
     int local_size;
     int *local_array;
+    int *global_array = NULL;
     int i, iteracao = 0;
     int ordenado_global = 0;
     int ordenado_local;
@@ -94,34 +95,40 @@ int main(int argc, char *argv[]) {
         MPI_Abort(MPI_COMM_WORLD, 1);
     }
 
-    // Geração dos dados: sequência decrescente global
-    int offset = rank * local_size;
-    for (i = 0; i < local_size; i++) {
-        local_array[i] = array_size - (offset + i);
-    }
-
-#ifdef DEBUG
+    // RANK 0 GERA O VETOR COMPLETO
     if (rank == 0) {
+        global_array = (int*)malloc(array_size * sizeof(int));
+        
+        // Gera vetor em ordem decrescente (pior caso para bubble sort)
+        for (i = 0; i < array_size; i++) {
+            global_array[i] = array_size - i;
+        }
+        
+        #ifdef DEBUG
         printf("Iniciando ordenação paralela com %d processos\n", size);
-        printf("Tamanho total: %d, Tamanho local: %d\n\n", array_size, local_size);
+        printf("Tamanho total: %d, Tamanho local: %d\n", array_size, local_size);
+        printf("Vetor inicial (primeiros 10): ");
+        for (i = 0; i < 10 && i < array_size; i++) {
+            printf("%d ", global_array[i]);
+        }
+        printf("\n\n");
+        #endif
     }
-#endif
+    
+    // DISTRIBUI O VETOR PARA TODOS OS PROCESSOS
+    MPI_Scatter(global_array, local_size, MPI_INT,
+                local_array, local_size, MPI_INT,
+                0, MPI_COMM_WORLD);
+    
+    // Rank 0 pode liberar o vetor global agora
+    if (rank == 0) {
+        free(global_array);
+    }
 
     // Buffer auxiliar único para mergesort (reutilizado)
-    int *aux = (int*)malloc(local_size * sizeof(int));
+    int *aux = (int*)malloc(local_size * 2 * sizeof(int));
     if (!aux) {
         fprintf(stderr, "Rank %d: erro ao alocar aux\n", rank);
-        MPI_Abort(MPI_COMM_WORLD, 1);
-    }
-
-    // Buffers para trocas entre vizinhos (reutilizados)
-    int num_troca = local_size / 2;
-    int *buffer_envio = (int*)malloc(num_troca * sizeof(int));
-    int *buffer_recebe = (int*)malloc(num_troca * sizeof(int));
-    int *temp = (int*)malloc(local_size * sizeof(int));
-
-    if (!buffer_envio || !buffer_recebe || !temp) {
-        fprintf(stderr, "Rank %d: erro ao alocar buffers de troca\n", rank);
         MPI_Abort(MPI_COMM_WORLD, 1);
     }
 
@@ -180,58 +187,60 @@ int main(int argc, char *argv[]) {
 
         // Troca com vizinho da direita (rank < size-1)
         if (rank < size - 1) {
-            // Copia metade superior local para envio
-            for (i = 0; i < num_troca; i++) {
-                buffer_envio[i] = local_array[local_size - num_troca + i];
+            // Troca TODO o array com o vizinho da direita
+            int *buffer_recebe = (int*)malloc(local_size * sizeof(int));
+            
+            // Troca arrays completos
+            MPI_Sendrecv(local_array, local_size, MPI_INT, rank + 1, 2,
+                        buffer_recebe, local_size, MPI_INT, rank + 1, 3,
+                        MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            
+            // Combina os dois arrays
+            int *temp = (int*)malloc(local_size * 2 * sizeof(int));
+            for (i = 0; i < local_size; i++) {
+                temp[i] = local_array[i];
+                temp[local_size + i] = buffer_recebe[i];
             }
-
-            // Troca com vizinho da direita
-            MPI_Sendrecv(buffer_envio, num_troca, MPI_INT, rank + 1, 2,
-                         buffer_recebe, num_troca, MPI_INT, rank + 1, 3,
-                         MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            // Monta vetor temp: metade inferior local + recebidos
-            int idx_temp = 0;
-            for (i = 0; i < num_troca; i++) {
-                temp[idx_temp++] = local_array[i];
-            }
-            for (i = 0; i < num_troca; i++) {
-                temp[idx_temp++] = buffer_recebe[i];
-            }
-
-            // Ordena temp e mantém os menores localmente
-            merge_sort(temp, aux, local_size);
+            
+            // Ordena tudo
+            merge_sort(temp, aux, local_size * 2);
+            
+            // Fica com a metade MENOR (rank menor fica com valores menores)
             for (i = 0; i < local_size; i++) {
                 local_array[i] = temp[i];
             }
+            
+            free(buffer_recebe);
+            free(temp);
         }
 
         // Troca com vizinho da esquerda (rank > 0)
         if (rank > 0) {
-            // Copia metade inferior local para envio
-            for (i = 0; i < num_troca; i++) {
-                buffer_envio[i] = local_array[i];
-            }
-
-            // Troca com vizinho da esquerda
-            MPI_Sendrecv(buffer_envio, num_troca, MPI_INT, rank - 1, 3,
-                         buffer_recebe, num_troca, MPI_INT, rank - 1, 2,
-                         MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            // Monta vetor temp: recebidos + metade superior local
-            int idx_temp = 0;
-            for (i = 0; i < num_troca; i++) {
-                temp[idx_temp++] = buffer_recebe[i];
-            }
-            for (i = num_troca; i < local_size; i++) {
-                temp[idx_temp++] = local_array[i];
-            }
-
-            // Ordena temp e mantém os maiores localmente
-            merge_sort(temp, aux, local_size);
+            // Troca TODO o array com o vizinho da esquerda
+            int *buffer_recebe = (int*)malloc(local_size * sizeof(int));
+            
+            // Troca arrays completos
+            MPI_Sendrecv(local_array, local_size, MPI_INT, rank - 1, 3,
+                        buffer_recebe, local_size, MPI_INT, rank - 1, 2,
+                        MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            
+            // Combina os dois arrays
+            int *temp = (int*)malloc(local_size * 2 * sizeof(int));
             for (i = 0; i < local_size; i++) {
-                local_array[i] = temp[i];
+                temp[i] = buffer_recebe[i];
+                temp[local_size + i] = local_array[i];
             }
+            
+            // Ordena tudo
+            merge_sort(temp, aux, local_size * 2);
+            
+            // Fica com a metade MAIOR (rank maior fica com valores maiores)
+            for (i = 0; i < local_size; i++) {
+                local_array[i] = temp[local_size + i];
+            }
+            
+            free(buffer_recebe);
+            free(temp);
         }
     }
 
@@ -243,20 +252,37 @@ int main(int argc, char *argv[]) {
         printf("Tempo total: %.6f segundos\n", end_time - start_time);
     }
 
-#ifdef DEBUG
-    // Impressão resumida de cada rank
+    // IMPRESSÃO DOS RESULTADOS DE CADA RANK
     MPI_Barrier(MPI_COMM_WORLD);
+    
+    // Cada processo imprime seus valores em ordem
     for (int r = 0; r < size; r++) {
         if (rank == r) {
             printf("\n=== RANK %d ===\n", rank);
+            printf("Faixa: [%d - %d]\n", rank * local_size + 1, (rank + 1) * local_size);
             printf("Primeiro valor: %d\n", local_array[0]);
             printf("Último valor: %d\n", local_array[local_size - 1]);
+            
+            // Imprime primeiros e últimos 5 valores
+            printf("Primeiros 5: ");
+            for (i = 0; i < 5 && i < local_size; i++) {
+                printf("%d ", local_array[i]);
+            }
+            printf("\nÚltimos 5: ");
+            for (i = (local_size - 5 > 0 ? local_size - 5 : 0); i < local_size; i++) {
+                printf("%d ", local_array[i]);
+            }
+            printf("\n");
+            fflush(stdout);
         }
         MPI_Barrier(MPI_COMM_WORLD);
     }
-#endif
 
-    // Verificação simples (apenas local + vizinho direito)
+    // Verificação final de ordenação
+    if (rank == 0) {
+        printf("\n=== VERIFICAÇÃO DE ORDENAÇÃO ===\n");
+    }
+
     int verificacao_local = 1;
 
     // Verifica ordenação local
@@ -296,14 +322,28 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    #ifdef DEBUG
+    // Coleta e imprime resultado (apenas para debug com vetores pequenos)
+    if (rank == 0) {
+        int *vetor_completo = (int*)malloc(array_size * sizeof(int));
+        MPI_Gather(local_array, local_size, MPI_INT,
+                  vetor_completo, local_size, MPI_INT, 0, MPI_COMM_WORLD);
+        
+        printf("\nVetor ordenado (primeiros 20): ");
+        for (i = 0; i < 20 && i < array_size; i++) {
+            printf("%d ", vetor_completo[i]);
+        }
+        printf("\n");
+        free(vetor_completo);
+    } else {
+        MPI_Gather(local_array, local_size, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
+    }
+    #endif
+
     // Liberação de memória
     free(local_array);
     free(aux);
-    free(buffer_envio);
-    free(buffer_recebe);
-    free(temp);
 
     MPI_Finalize();
     return 0;
 }
-

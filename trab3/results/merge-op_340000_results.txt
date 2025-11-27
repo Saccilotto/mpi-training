@@ -1,0 +1,119 @@
+=========================================
+TESTES DE DESEMPENHO - merge-op
+=========================================
+Tamanho do vetor: 340000
+Executável: merge-op
+Data/Hora: Thu Nov 27 19:04:03 -03 2025
+=========================================
+
+
+=========================================
+TESTE: 1 processos em 1 nó(s)
+=========================================
+Comando: time srun --exclusive -N 1 -n 1 ./merge-op 340000
+
+srun: job 29747 queued and waiting for resources
+srun: job 29747 has been allocated resources
+
+Ordenação concluída!
+Iterações: 1
+Tempo total: 0.018049 segundos
+✓ Vetor ORDENADO corretamente!
+
+real	0m1.191s
+user	0m0.010s
+sys	0m0.018s
+
+=========================================
+TESTE: 2 processos em 1 nó(s)
+=========================================
+Comando: time srun --exclusive -N 1 -n 2 ./merge-op 340000
+
+srun: job 29748 queued and waiting for resources
+srun: job 29748 has been allocated resources
+
+Ordenação concluída!
+Iterações: 3
+Tempo total: 0.039210 segundos
+✓ Vetor ORDENADO corretamente!
+
+real	0m1.117s
+user	0m0.009s
+sys	0m0.020s
+
+=========================================
+TESTE: 4 processos em 1 nó(s)
+=========================================
+Comando: time srun --exclusive -N 1 -n 4 ./merge-op 340000
+
+srun: job 29749 queued and waiting for resources
+srun: job 29749 has been allocated resources
+
+Ordenação concluída!
+Iterações: 5
+Tempo total: 0.071939 segundos
+✓ Vetor ORDENADO corretamente!
+
+real	0m1.032s
+user	0m0.005s
+sys	0m0.023s
+
+=========================================
+TESTE: 8 processos em 1 nó(s)
+=========================================
+Comando: time srun --exclusive -N 1 -n 8 ./merge-op 340000
+
+srun: job 29750 queued and waiting for resources
+srun: job 29750 has been allocated resources
+
+Ordenação concluída!
+Iterações: 9
+Tempo total: 0.119667 segundos
+✓ Vetor ORDENADO corretamente!
+
+real	0m1.081s
+user	0m0.011s
+sys	0m0.017s
+
+=========================================
+TESTE: 16 processos em 2 nó(s)
+=========================================
+Comando: time srun --exclusive -N 2 -n 16 ./merge-op 340000
+
+srun: job 29751 queued and waiting for resources
+srun: job 29751 has been allocated resources
+
+Ordenação concluída!
+Iterações: 17
+Tempo total: 0.234347 segundos
+✓ Vetor ORDENADO corretamente!
+
+real	0m1.114s
+user	0m0.008s
+sys	0m0.022s
+
+=========================================
+TESTE: 32 processos em 2 nó(s)
+=========================================
+Comando: time srun --exclusive -N 2 -n 32 ./merge-op 340000
+
+srun: job 29752 queued and waiting for resources
+srun: job 29752 has been allocated resources
+
+Ordenação concluída!
+Iterações: 42789
+Tempo total: 958.006905 segundos
+✓ Vetor ORDENADO corretamente!
+
+real	15m58.845s
+user	0m0.012s
+sys	0m0.022s
+=========================================
+RESUMO DOS TEMPOS DE EXECUÇÃO
+=========================================
+1 processos, 1 nó(s): 0.018049 segundos
+2 processos, 1 nó(s): 0.039210 segundos
+4 processos, 1 nó(s): 0.071939 segundos
+8 processos, 1 nó(s): 0.119667 segundos
+16 processos, 2 nó(s): 0.234347 segundos
+32 processos, 2 nó(s): 958.006905 segundos

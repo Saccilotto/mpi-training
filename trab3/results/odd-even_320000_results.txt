@@ -1,0 +1,42 @@
+=========================================
+TESTES DE DESEMPENHO - odd-even
+=========================================
+Tamanho do vetor: 320000
+Executável: odd-even
+Data/Hora: Thu Nov 27 20:44:20 -03 2025
+=========================================
+
+
+=========================================
+TESTE: 1 processos em 1 nó(s)
+=========================================
+Comando: time srun --exclusive -N 1 -n 1 ./odd-even 320000
+
+srun: job 29790 queued and waiting for resources
+srun: job 29790 has been allocated resources
+
+Ordenação concluída!
+Iterações: 1
+Tempo total: 163.245076 segundos
+
+=== RANK 0 ===
+Faixa: [1 - 320000]
+Primeiro valor: 1
+Último valor: 320000
+Primeiros 5: 1 2 3 4 5 
+Últimos 5: 319996 319997 319998 319999 320000 
+
+=== VERIFICAÇÃO DE ORDENAÇÃO ===
+✓ Vetor ORDENADO corretamente!
+
+real	2m43.943s
+user	0m0.011s
+sys	0m0.026s
+
+=========================================
+TESTE: 2 processos em 1 nó(s)
+=========================================
+Comando: time srun --exclusive -N 1 -n 2 ./odd-even 320000
+
+srun: job 29792 queued and waiting for resources
+srun: job 29792 has been allocated resources

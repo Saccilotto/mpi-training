@@ -1,23 +1,23 @@
 =========================================
-TESTES DE DESEMPENHO - odd-even
+TESTES DE DESEMPENHO - bubble
 =========================================
 Tamanho do vetor: 160000
-Executável: odd-even
-Data/Hora: Thu Nov 27 18:37:46 -03 2025
+Executável: bubble
+Data/Hora: Thu Nov 27 18:42:39 -03 2025
 =========================================
 
 
 =========================================
 TESTE: 1 processos em 1 nó(s)
 =========================================
-Comando: time srun --exclusive -N 1 -n 1 ./odd-even 160000
+Comando: time srun --exclusive -N 1 -n 1 ./bubble 160000
 
-srun: job 29715 queued and waiting for resources
-srun: job 29715 has been allocated resources
+srun: job 29727 queued and waiting for resources
+srun: job 29727 has been allocated resources
 
 Ordenação concluída!
 Iterações: 1
-Tempo total: 40.816285 segundos
+Tempo total: 25.693435 segundos
 
 === RANK 0 ===
 Faixa: [1 - 160000]
@@ -29,21 +29,21 @@ Primeiros 5: 1 2 3 4 5
 === VERIFICAÇÃO DE ORDENAÇÃO ===
 ✓ Vetor ORDENADO corretamente!
 
-real	0m41.494s
-user	0m0.013s
-sys	0m0.018s
+real	0m27.825s
+user	0m0.017s
+sys	0m0.016s
 
 =========================================
 TESTE: 2 processos em 1 nó(s)
 =========================================
-Comando: time srun --exclusive -N 1 -n 2 ./odd-even 160000
+Comando: time srun --exclusive -N 1 -n 2 ./bubble 160000
 
-srun: job 29716 queued and waiting for resources
-srun: job 29716 has been allocated resources
+srun: job 29728 queued and waiting for resources
+srun: job 29728 has been allocated resources
 
 Ordenação concluída!
-Iterações: 2
-Tempo total: 30.638877 segundos
+Iterações: 3
+Tempo total: 10.578862 segundos
 
 === RANK 0 ===
 Faixa: [1 - 80000]
@@ -62,21 +62,21 @@ Primeiros 5: 80001 80002 80003 80004 80005
 === VERIFICAÇÃO DE ORDENAÇÃO ===
 ✓ Vetor ORDENADO corretamente!
 
-real	0m31.957s
+real	0m11.012s
 user	0m0.010s
-sys	0m0.018s
+sys	0m0.019s
 
 =========================================
 TESTE: 4 processos em 1 nó(s)
 =========================================
-Comando: time srun --exclusive -N 1 -n 4 ./odd-even 160000
+Comando: time srun --exclusive -N 1 -n 4 ./bubble 160000
 
-srun: job 29717 queued and waiting for resources
-srun: job 29717 has been allocated resources
+srun: job 29729 queued and waiting for resources
+srun: job 29729 has been allocated resources
 
 Ordenação concluída!
-Iterações: 4
-Tempo total: 22.677705 segundos
+Iterações: 5
+Tempo total: 9.362897 segundos
 
 === RANK 0 ===
 Faixa: [1 - 40000]
@@ -109,21 +109,21 @@ Primeiros 5: 120001 120002 120003 120004 120005
 === VERIFICAÇÃO DE ORDENAÇÃO ===
 ✓ Vetor ORDENADO corretamente!
 
-real	0m23.079s
-user	0m0.018s
-sys	0m0.010s
+real	0m9.798s
+user	0m0.010s
+sys	0m0.020s
 
 =========================================
 TESTE: 8 processos em 1 nó(s)
 =========================================
-Comando: time srun --exclusive -N 1 -n 8 ./odd-even 160000
+Comando: time srun --exclusive -N 1 -n 8 ./bubble 160000
 
-srun: job 29718 queued and waiting for resources
-srun: job 29718 has been allocated resources
+srun: job 29730 queued and waiting for resources
+srun: job 29730 has been allocated resources
 
 Ordenação concluída!
-Iterações: 8
-Tempo total: 9.176098 segundos
+Iterações: 9
+Tempo total: 8.854780 segundos
 
 === RANK 0 ===
 Faixa: [1 - 20000]
@@ -184,21 +184,21 @@ Primeiros 5: 140001 140002 140003 140004 140005
 === VERIFICAÇÃO DE ORDENAÇÃO ===
 ✓ Vetor ORDENADO corretamente!
 
-real	0m10.552s
-user	0m0.015s
-sys	0m0.014s
+real	0m9.530s
+user	0m0.014s
+sys	0m0.013s
 
 =========================================
 TESTE: 16 processos em 2 nó(s)
 =========================================
-Comando: time srun --exclusive -N 2 -n 16 ./odd-even 160000
+Comando: time srun --exclusive -N 2 -n 16 ./bubble 160000
 
-srun: job 29719 queued and waiting for resources
-srun: job 29719 has been allocated resources
+srun: job 29731 queued and waiting for resources
+srun: job 29731 has been allocated resources
 
 Ordenação concluída!
-Iterações: 16
-Tempo total: 4.265169 segundos
+Iterações: 17
+Tempo total: 8.754611 segundos
 
 === RANK 0 ===
 Faixa: [1 - 10000]
@@ -207,26 +207,12 @@ Primeiro valor: 1
 Primeiros 5: 1 2 3 4 5 
 Últimos 5: 9996 9997 9998 9999 10000 
 
-=== RANK 8 ===
-Faixa: [80001 - 90000]
-Primeiro valor: 80001
-Último valor: 90000
-Primeiros 5: 80001 80002 80003 80004 80005 
-Últimos 5: 89996 89997 89998 89999 90000 
-
 === RANK 1 ===
 Faixa: [10001 - 20000]
 Primeiro valor: 10001
 Último valor: 20000
 Primeiros 5: 10001 10002 10003 10004 10005 
 Últimos 5: 19996 19997 19998 19999 20000 
-
-=== RANK 9 ===
-Faixa: [90001 - 100000]
-Primeiro valor: 90001
-Último valor: 100000
-Primeiros 5: 90001 90002 90003 90004 90005 
-Últimos 5: 99996 99997 99998 99999 100000 
 
 === RANK 2 ===
 Faixa: [20001 - 30000]
@@ -235,26 +221,12 @@ Primeiro valor: 20001
 Primeiros 5: 20001 20002 20003 20004 20005 
 Últimos 5: 29996 29997 29998 29999 30000 
 
-=== RANK 10 ===
-Faixa: [100001 - 110000]
-Primeiro valor: 100001
-Último valor: 110000
-Primeiros 5: 100001 100002 100003 100004 100005 
-Últimos 5: 109996 109997 109998 109999 110000 
-
 === RANK 3 ===
 Faixa: [30001 - 40000]
 Primeiro valor: 30001
 Último valor: 40000
 Primeiros 5: 30001 30002 30003 30004 30005 
 Últimos 5: 39996 39997 39998 39999 40000 
-
-=== RANK 11 ===
-Faixa: [110001 - 120000]
-Primeiro valor: 110001
-Último valor: 120000
-Primeiros 5: 110001 110002 110003 110004 110005 
-Últimos 5: 119996 119997 119998 119999 120000 
 
 === RANK 4 ===
 Faixa: [40001 - 50000]
@@ -263,26 +235,12 @@ Primeiro valor: 40001
 Primeiros 5: 40001 40002 40003 40004 40005 
 Últimos 5: 49996 49997 49998 49999 50000 
 
-=== RANK 12 ===
-Faixa: [120001 - 130000]
-Primeiro valor: 120001
-Último valor: 130000
-Primeiros 5: 120001 120002 120003 120004 120005 
-Últimos 5: 129996 129997 129998 129999 130000 
-
 === RANK 5 ===
 Faixa: [50001 - 60000]
 Primeiro valor: 50001
 Último valor: 60000
 Primeiros 5: 50001 50002 50003 50004 50005 
 Últimos 5: 59996 59997 59998 59999 60000 
-
-=== RANK 13 ===
-Faixa: [130001 - 140000]
-Primeiro valor: 130001
-Último valor: 140000
-Primeiros 5: 130001 130002 130003 130004 130005 
-Últimos 5: 139996 139997 139998 139999 140000 
 
 === RANK 6 ===
 Faixa: [60001 - 70000]
@@ -291,19 +249,61 @@ Primeiro valor: 60001
 Primeiros 5: 60001 60002 60003 60004 60005 
 Últimos 5: 69996 69997 69998 69999 70000 
 
-=== RANK 14 ===
-Faixa: [140001 - 150000]
-Primeiro valor: 140001
-Último valor: 150000
-Primeiros 5: 140001 140002 140003 140004 140005 
-Últimos 5: 149996 149997 149998 149999 150000 
-
 === RANK 7 ===
 Faixa: [70001 - 80000]
 Primeiro valor: 70001
 Último valor: 80000
 Primeiros 5: 70001 70002 70003 70004 70005 
 Últimos 5: 79996 79997 79998 79999 80000 
+
+=== RANK 8 ===
+Faixa: [80001 - 90000]
+Primeiro valor: 80001
+Último valor: 90000
+Primeiros 5: 80001 80002 80003 80004 80005 
+Últimos 5: 89996 89997 89998 89999 90000 
+
+=== RANK 9 ===
+Faixa: [90001 - 100000]
+Primeiro valor: 90001
+Último valor: 100000
+Primeiros 5: 90001 90002 90003 90004 90005 
+Últimos 5: 99996 99997 99998 99999 100000 
+
+=== RANK 10 ===
+Faixa: [100001 - 110000]
+Primeiro valor: 100001
+Último valor: 110000
+Primeiros 5: 100001 100002 100003 100004 100005 
+Últimos 5: 109996 109997 109998 109999 110000 
+
+=== RANK 11 ===
+Faixa: [110001 - 120000]
+Primeiro valor: 110001
+Último valor: 120000
+Primeiros 5: 110001 110002 110003 110004 110005 
+Últimos 5: 119996 119997 119998 119999 120000 
+
+=== RANK 12 ===
+Faixa: [120001 - 130000]
+Primeiro valor: 120001
+Último valor: 130000
+Primeiros 5: 120001 120002 120003 120004 120005 
+Últimos 5: 129996 129997 129998 129999 130000 
+
+=== RANK 13 ===
+Faixa: [130001 - 140000]
+Primeiro valor: 130001
+Último valor: 140000
+Primeiros 5: 130001 130002 130003 130004 130005 
+Últimos 5: 139996 139997 139998 139999 140000 
+
+=== RANK 14 ===
+Faixa: [140001 - 150000]
+Primeiro valor: 140001
+Último valor: 150000
+Primeiros 5: 140001 140002 140003 140004 140005 
+Últimos 5: 149996 149997 149998 149999 150000 
 
 === RANK 15 ===
 Faixa: [150001 - 160000]
@@ -315,21 +315,21 @@ Primeiros 5: 150001 150002 150003 150004 150005
 === VERIFICAÇÃO DE ORDENAÇÃO ===
 ✓ Vetor ORDENADO corretamente!
 
-real	0m5.098s
-user	0m0.005s
-sys	0m0.027s
+real	0m9.920s
+user	0m0.014s
+sys	0m0.021s
 
 =========================================
 TESTE: 32 processos em 2 nó(s)
 =========================================
-Comando: time srun --exclusive -N 2 -n 32 ./odd-even 160000
+Comando: time srun --exclusive -N 2 -n 32 ./bubble 160000
 
-srun: job 29720 queued and waiting for resources
-srun: job 29720 has been allocated resources
+srun: job 29732 queued and waiting for resources
+srun: job 29732 has been allocated resources
 
 Ordenação concluída!
-Iterações: 32
-Tempo total: 4.108976 segundos
+Iterações: 33
+Tempo total: 11.013686 segundos
 
 === RANK 0 ===
 Faixa: [1 - 5000]
@@ -436,19 +436,19 @@ Primeiro valor: 70001
 Primeiros 5: 70001 70002 70003 70004 70005 
 Últimos 5: 74996 74997 74998 74999 75000 
 
-=== RANK 16 ===
-Faixa: [80001 - 85000]
-Primeiro valor: 80001
-Último valor: 85000
-Primeiros 5: 80001 80002 80003 80004 80005 
-Últimos 5: 84996 84997 84998 84999 85000 
-
 === RANK 15 ===
 Faixa: [75001 - 80000]
 Primeiro valor: 75001
 Último valor: 80000
 Primeiros 5: 75001 75002 75003 75004 75005 
 Últimos 5: 79996 79997 79998 79999 80000 
+
+=== RANK 16 ===
+Faixa: [80001 - 85000]
+Primeiro valor: 80001
+Último valor: 85000
+Primeiros 5: 80001 80002 80003 80004 80005 
+Últimos 5: 84996 84997 84998 84999 85000 
 
 === RANK 17 ===
 Faixa: [85001 - 90000]
@@ -558,15 +558,15 @@ Primeiros 5: 155001 155002 155003 155004 155005
 === VERIFICAÇÃO DE ORDENAÇÃO ===
 ✓ Vetor ORDENADO corretamente!
 
-real	0m4.911s
-user	0m0.015s
-sys	0m0.019s
+real	0m12.326s
+user	0m0.010s
+sys	0m0.023s
 =========================================
 RESUMO DOS TEMPOS DE EXECUÇÃO
 =========================================
-1 processos, 1 nó(s): 40.816285 segundos
-2 processos, 1 nó(s): 30.638877 segundos
-4 processos, 1 nó(s): 22.677705 segundos
-8 processos, 1 nó(s): 9.176098 segundos
-16 processos, 2 nó(s): 4.265169 segundos
-32 processos, 2 nó(s): 4.108976 segundos
+1 processos, 1 nó(s): 25.693435 segundos
+2 processos, 1 nó(s): 10.578862 segundos
+4 processos, 1 nó(s): 9.362897 segundos
+8 processos, 1 nó(s): 8.854780 segundos
+16 processos, 2 nó(s): 8.754611 segundos
+32 processos, 2 nó(s): 11.013686 segundos
