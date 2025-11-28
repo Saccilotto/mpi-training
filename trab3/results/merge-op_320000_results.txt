@@ -1,23 +1,23 @@
 =========================================
-TESTES DE DESEMPENHO - odd-even
+TESTES DE DESEMPENHO - merge-op
 =========================================
 Tamanho do vetor: 320000
-Executável: odd-even
-Data/Hora: Thu Nov 27 20:44:20 -03 2025
+Executável: merge-op
+Data/Hora: Thu Nov 27 20:52:16 -03 2025
 =========================================
 
 
 =========================================
 TESTE: 1 processos em 1 nó(s)
 =========================================
-Comando: time srun --exclusive -N 1 -n 1 ./odd-even 320000
+Comando: time srun --exclusive -N 1 -n 1 ./merge-op 320000
 
-srun: job 29790 queued and waiting for resources
-srun: job 29790 has been allocated resources
+srun: job 29797 queued and waiting for resources
+srun: job 29797 has been allocated resources
 
 Ordenação concluída!
 Iterações: 1
-Tempo total: 163.245076 segundos
+Tempo total: 0.016765 segundos
 
 === RANK 0 ===
 Faixa: [1 - 320000]
@@ -29,21 +29,21 @@ Primeiros 5: 1 2 3 4 5
 === VERIFICAÇÃO DE ORDENAÇÃO ===
 ✓ Vetor ORDENADO corretamente!
 
-real	2m43.943s
-user	0m0.011s
-sys	0m0.026s
+real	0m0.325s
+user	0m0.006s
+sys	0m0.020s
 
 =========================================
 TESTE: 2 processos em 1 nó(s)
 =========================================
-Comando: time srun --exclusive -N 1 -n 2 ./odd-even 320000
+Comando: time srun --exclusive -N 1 -n 2 ./merge-op 320000
 
-srun: job 29792 queued and waiting for resources
-srun: job 29792 has been allocated resources
+srun: job 29798 queued and waiting for resources
+srun: job 29798 has been allocated resources
 
 Ordenação concluída!
 Iterações: 2
-Tempo total: 122.692692 segundos
+Tempo total: 0.031716 segundos
 
 === RANK 0 ===
 Faixa: [1 - 160000]
@@ -62,21 +62,21 @@ Primeiros 5: 160001 160002 160003 160004 160005
 === VERIFICAÇÃO DE ORDENAÇÃO ===
 ✓ Vetor ORDENADO corretamente!
 
-real	2m3.748s
-user	0m0.017s
-sys	0m0.015s
+real	0m1.101s
+user	0m0.014s
+sys	0m0.013s
 
 =========================================
 TESTE: 4 processos em 1 nó(s)
 =========================================
-Comando: time srun --exclusive -N 1 -n 4 ./odd-even 320000
+Comando: time srun --exclusive -N 1 -n 4 ./merge-op 320000
 
-srun: job 29793 queued and waiting for resources
-srun: job 29793 has been allocated resources
+srun: job 29799 queued and waiting for resources
+srun: job 29799 has been allocated resources
 
 Ordenação concluída!
 Iterações: 4
-Tempo total: 94.614004 segundos
+Tempo total: 0.083042 segundos
 
 === RANK 0 ===
 Faixa: [1 - 80000]
@@ -109,21 +109,21 @@ Primeiros 5: 240001 240002 240003 240004 240005
 === VERIFICAÇÃO DE ORDENAÇÃO ===
 ✓ Vetor ORDENADO corretamente!
 
-real	1m35.064s
-user	0m0.007s
-sys	0m0.028s
+real	0m1.020s
+user	0m0.014s
+sys	0m0.013s
 
 =========================================
 TESTE: 8 processos em 1 nó(s)
 =========================================
-Comando: time srun --exclusive -N 1 -n 8 ./odd-even 320000
+Comando: time srun --exclusive -N 1 -n 8 ./merge-op 320000
 
-srun: job 29794 queued and waiting for resources
-srun: job 29794 has been allocated resources
+srun: job 29800 queued and waiting for resources
+srun: job 29800 has been allocated resources
 
 Ordenação concluída!
 Iterações: 8
-Tempo total: 44.556713 segundos
+Tempo total: 0.182714 segundos
 
 === RANK 0 ===
 Faixa: [1 - 40000]
@@ -184,21 +184,21 @@ Primeiros 5: 280001 280002 280003 280004 280005
 === VERIFICAÇÃO DE ORDENAÇÃO ===
 ✓ Vetor ORDENADO corretamente!
 
-real	0m45.092s
-user	0m0.011s
-sys	0m0.024s
+real	0m1.191s
+user	0m0.012s
+sys	0m0.016s
 
 =========================================
 TESTE: 16 processos em 2 nó(s)
 =========================================
-Comando: time srun --exclusive -N 2 -n 16 ./odd-even 320000
+Comando: time srun --exclusive -N 2 -n 16 ./merge-op 320000
 
-srun: job 29795 queued and waiting for resources
-srun: job 29795 has been allocated resources
+srun: job 29801 queued and waiting for resources
+srun: job 29801 has been allocated resources
 
 Ordenação concluída!
 Iterações: 16
-Tempo total: 18.295448 segundos
+Tempo total: 0.416315 segundos
 
 === RANK 0 ===
 Faixa: [1 - 20000]
@@ -242,13 +242,6 @@ Primeiro valor: 100001
 Primeiros 5: 100001 100002 100003 100004 100005 
 Últimos 5: 119996 119997 119998 119999 120000 
 
-=== RANK 8 ===
-Faixa: [160001 - 180000]
-Primeiro valor: 160001
-Último valor: 180000
-Primeiros 5: 160001 160002 160003 160004 160005 
-Últimos 5: 179996 179997 179998 179999 180000 
-
 === RANK 6 ===
 Faixa: [120001 - 140000]
 Primeiro valor: 120001
@@ -262,6 +255,13 @@ Primeiro valor: 140001
 Último valor: 160000
 Primeiros 5: 140001 140002 140003 140004 140005 
 Últimos 5: 159996 159997 159998 159999 160000 
+
+=== RANK 8 ===
+Faixa: [160001 - 180000]
+Primeiro valor: 160001
+Último valor: 180000
+Primeiros 5: 160001 160002 160003 160004 160005 
+Últimos 5: 179996 179997 179998 179999 180000 
 
 === RANK 9 ===
 Faixa: [180001 - 200000]
@@ -315,21 +315,21 @@ Primeiros 5: 300001 300002 300003 300004 300005
 === VERIFICAÇÃO DE ORDENAÇÃO ===
 ✓ Vetor ORDENADO corretamente!
 
-real	0m18.791s
-user	0m0.005s
-sys	0m0.028s
+real	0m1.223s
+user	0m0.011s
+sys	0m0.022s
 
 =========================================
 TESTE: 32 processos em 2 nó(s)
 =========================================
-Comando: time srun --exclusive -N 2 -n 32 ./odd-even 320000
+Comando: time srun --exclusive -N 2 -n 32 ./merge-op 320000
 
-srun: job 29796 queued and waiting for resources
-srun: job 29796 has been allocated resources
+srun: job 29802 queued and waiting for resources
+srun: job 29802 has been allocated resources
 
 Ordenação concluída!
 Iterações: 32
-Tempo total: 16.388469 segundos
+Tempo total: 1.239101 segundos
 
 === RANK 0 ===
 Faixa: [1 - 10000]
@@ -436,19 +436,19 @@ Primeiro valor: 140001
 Primeiros 5: 140001 140002 140003 140004 140005 
 Últimos 5: 149996 149997 149998 149999 150000 
 
-=== RANK 15 ===
-Faixa: [150001 - 160000]
-Primeiro valor: 150001
-Último valor: 160000
-Primeiros 5: 150001 150002 150003 150004 150005 
-Últimos 5: 159996 159997 159998 159999 160000 
-
 === RANK 16 ===
 Faixa: [160001 - 170000]
 Primeiro valor: 160001
 Último valor: 170000
 Primeiros 5: 160001 160002 160003 160004 160005 
 Últimos 5: 169996 169997 169998 169999 170000 
+
+=== RANK 15 ===
+Faixa: [150001 - 160000]
+Primeiro valor: 150001
+Último valor: 160000
+Primeiros 5: 150001 150002 150003 150004 150005 
+Últimos 5: 159996 159997 159998 159999 160000 
 
 === RANK 17 ===
 Faixa: [170001 - 180000]
@@ -558,15 +558,15 @@ Primeiros 5: 310001 310002 310003 310004 310005
 === VERIFICAÇÃO DE ORDENAÇÃO ===
 ✓ Vetor ORDENADO corretamente!
 
-real	0m17.157s
-user	0m0.012s
-sys	0m0.019s
+real	0m1.882s
+user	0m0.016s
+sys	0m0.016s
 =========================================
 RESUMO DOS TEMPOS DE EXECUÇÃO
 =========================================
-1 processos, 1 nó(s): 163.245076 segundos
-2 processos, 1 nó(s): 122.692692 segundos
-4 processos, 1 nó(s): 94.614004 segundos
-8 processos, 1 nó(s): 44.556713 segundos
-16 processos, 2 nó(s): 18.295448 segundos
-32 processos, 2 nó(s): 16.388469 segundos
+1 processos, 1 nó(s): 0.016765 segundos
+2 processos, 1 nó(s): 0.031716 segundos
+4 processos, 1 nó(s): 0.083042 segundos
+8 processos, 1 nó(s): 0.182714 segundos
+16 processos, 2 nó(s): 0.416315 segundos
+32 processos, 2 nó(s): 1.239101 segundos
